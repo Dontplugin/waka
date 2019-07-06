@@ -4,6 +4,7 @@ import "./index.css";
 import AudioAnalyser from 'react-audio-analyser'
 import { Button, List, Card, Toast, WhiteSpace } from 'antd-mobile';
 import 'antd-mobile/dist/antd-mobile.css';
+import axios from 'axios'
 
 const Item = List.Item;
 const Brief = Item.Brief;
@@ -15,12 +16,18 @@ export default class App extends React.Component {
         this.state = {
             status: "",
             audioType: 'audio/wav',
-            audioSrc: ''
+            audioSrc: '',
+            myBlob: {}, 
+            toread: {
+                id: 0,
+                type: 0,
+                sentence: "test"
+            }
         }
     }
 
     componentDidMount() {
-        this.getAll();
+        this.getNext()
     }
 
     controlAudio(status) {
@@ -38,6 +45,7 @@ export default class App extends React.Component {
     handleUpload = (file) => {
         const formdata = new FormData();
         formdata.append('file', file);
+        formdata.append('toread', JSON.stringify(this.state.toread));
             
         for (var value of formdata.values()) {
             console.log(value);
@@ -52,7 +60,7 @@ export default class App extends React.Component {
             }
         }).then(res => {
             Toast.info('上传成功', 1);
-            this.getAll();
+            this.getNext()
         }
         ).catch(error => console.log(error));
     };
@@ -70,6 +78,22 @@ export default class App extends React.Component {
           console.log(response);
         }).catch(error => console.log(error));
       }
+
+    getNext() {
+        let ok = this;
+        const url = 'http://127.0.0.1:8080/file/getNextToread';
+        axios.get(url)
+        .then(function (response) {
+            console.log(response.data.data);
+            ok.setState({
+                toread: response.data.data
+            })
+            console.log(ok.state.toread);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    }
 
     render() {
         const {status, audioSrc, audioType} = this.state;
@@ -89,12 +113,9 @@ export default class App extends React.Component {
                 console.log("stop信息", e)
                 var path = window.URL.createObjectURL(e)
                 this.setState({
-                    audioSrc: path
+                    audioSrc: path,
+                    myBlob: e
                 })
-                let file = new File([e], "hello.wav")
-                this.handleUpload(file)
-
-                console.log("文件", file)
             },
             onRecordCallback: (e) => {
                 console.log("recording", e)
@@ -109,12 +130,12 @@ export default class App extends React.Component {
                     <WhiteSpace size="lg" />
                     <Card full>
                     <Card.Header
-                        title="文本标题"
+                        title={this.state.toread.id}
                         thumb="https://gw.alipayobjects.com/zos/rmsportal/MRhHctKOineMbKAZslML.jpg"
-                        extra={<span></span>}
+                        extra={<span>类型id: {this.state.toread.type}</span>}
                     />
                     <Card.Body>
-                        <div>撒多好萨达搜到黑白搜到哈市</div>
+                        <div>{this.state.toread.sentence}</div>
                     </Card.Body>
                     {/* <Card.Footer content="footer content" extra={<div>extra footer content</div>} /> */}
                     </Card>
@@ -142,10 +163,12 @@ export default class App extends React.Component {
 
                 <div>
                     <Button type="warning" onClick={(e) => {
-                        this.handleUpload()
+                        let myBlob = this.state.myBlob;
+                        let file = new File([myBlob], this.state.toread.type + "_" + this.state.toread.sentence + ".wav")
+                        this.handleUpload(file)
                     }}>提交</Button>
 
-                    <List renderHeader={() => '已上传列表'} className="my-list">
+                    {/* <List renderHeader={() => '已上传列表'} className="my-list">
                         <Item extra="10:30" align="top" thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png" multipleLine>
                             Title <Brief>subtitle</Brief>
                         </Item>
@@ -167,7 +190,7 @@ export default class App extends React.Component {
                         <Item extra="10:30" align="top" thumb="https://zos.alipayobjects.com/rmsportal/dNuvNrtqUztHCwM.png" multipleLine>
                             Title <Brief>subtitle</Brief>
                         </Item>
-                    </List>
+                    </List> */}
                 </div>
             </div>
         );
