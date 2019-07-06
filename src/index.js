@@ -61,6 +61,14 @@ export default class App extends React.Component {
         }).then(res => {
             Toast.info('上传成功', 1);
             this.getNext()
+
+            this.setState({
+                status: "",
+                audioType: 'audio/wav',
+                audioSrc: '',
+                myBlob: {}, 
+
+            })
         }
         ).catch(error => console.log(error));
     };
