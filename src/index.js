@@ -6,8 +6,6 @@ import { Button, List, Card, Toast, WhiteSpace } from 'antd-mobile';
 import 'antd-mobile/dist/antd-mobile.css';
 import axios from 'axios'
 
-const Item = List.Item;
-const Brief = Item.Brief;
 export default class App extends React.Component {
 
     
@@ -51,7 +49,7 @@ export default class App extends React.Component {
             console.log(value);
         }
         
-        const url = 'http://127.0.0.1:8080/file/upload';
+        const url = 'http://121.41.0.213:8080/file/upload';
         fetch(url, {
             method: 'POST',
             body: formdata,
@@ -74,7 +72,7 @@ export default class App extends React.Component {
     };
 
     getAll() {
-        const url = 'http://127.0.0.1:8080/file/getAll';
+        const url = 'http://121.41.0.213:8080/file/getAll';
         fetch(url, {
           method:'GET',
           dataType: "json",
@@ -89,7 +87,7 @@ export default class App extends React.Component {
 
     getNext() {
         let ok = this;
-        const url = 'http://127.0.0.1:8080/file/getNextToread';
+        const url = 'http://121.41.0.213:8080/file/getNextToread';
         axios.get(url)
         .then(function (response) {
             console.log(response.data.data);
@@ -108,7 +106,7 @@ export default class App extends React.Component {
         const audioProps = {
             audioType,
             // audioOptions: {sampleRate: 8000}, // 设置输出音频采样率
-            status,
+            // status,
             audioSrc,
             timeslice: 1000, // timeslice（https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/start#Parameters）
             startCallback: (e) => {
@@ -127,9 +125,6 @@ export default class App extends React.Component {
             },
             onRecordCallback: (e) => {
                 console.log("recording", e)
-            },
-            errorCallback: (err) => {
-                console.log("error", err)
             }
         }
         return (
@@ -148,7 +143,7 @@ export default class App extends React.Component {
                     {/* <Card.Footer content="footer content" extra={<div>extra footer content</div>} /> */}
                     </Card>
                 </div>
-                <AudioAnalyser {...audioProps}>
+                <AudioAnalyser status={this.state.status} {...audioProps}>
                     <div className="btn-box">
                         {status !== "recording" &&
                         <i className="iconfont icon-start" title="开始"
@@ -171,6 +166,10 @@ export default class App extends React.Component {
 
                 <div>
                     <Button type="warning" onClick={(e) => {
+                        if (this.state.status !== 'inactive') {
+                            Toast.info('请先停止录音在上传', 1);
+                            return;
+                        }
                         let myBlob = this.state.myBlob;
                         let file = new File([myBlob], this.state.toread.type + "_" + this.state.toread.sentence + ".wav")
                         this.handleUpload(file)
